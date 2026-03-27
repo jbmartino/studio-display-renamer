@@ -48,4 +48,3 @@ Each Apple Studio Display has a unique hardware serial embedded in its CoreAudio
 
 - macOS 14 (Sonoma) or later
 - No Apple Developer account needed for personal use
-- For distribution: code signing + notarization requires a Developer ID ($99/yr)
