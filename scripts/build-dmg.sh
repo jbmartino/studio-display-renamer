@@ -10,6 +10,9 @@ BUILD_DIR=".build/release"
 APP_BUNDLE="${APP_NAME}.app"
 DMG_STAGING=".build/dmg-staging"
 
+# Code signing identity (set via environment, or skip signing for local builds)
+SIGN_IDENTITY="${CODESIGN_IDENTITY:-}"
+
 echo "==> Building ${APP_NAME} v${VERSION}..."
 swift build -c release
 
@@ -23,6 +26,17 @@ cp Info.plist "${APP_BUNDLE}/Contents/"
 if [ -f "AppIcon.icns" ]; then
     mkdir -p "${APP_BUNDLE}/Contents/Resources"
     cp AppIcon.icns "${APP_BUNDLE}/Contents/Resources/"
+fi
+
+# Code sign the app bundle
+if [ -n "${SIGN_IDENTITY}" ]; then
+    echo "==> Signing app bundle with: ${SIGN_IDENTITY}..."
+    codesign --force --options runtime --sign "${SIGN_IDENTITY}" "${APP_BUNDLE}/Contents/MacOS/${APP_NAME}"
+    codesign --force --options runtime --sign "${SIGN_IDENTITY}" "${APP_BUNDLE}"
+    echo "==> Verifying signature..."
+    codesign --verify --verbose "${APP_BUNDLE}"
+else
+    echo "==> Skipping code signing (no CODESIGN_IDENTITY set)"
 fi
 
 echo "==> Creating DMG..."
@@ -41,15 +55,27 @@ hdiutil create \
 
 rm -rf "${DMG_STAGING}"
 
+# Sign the DMG itself
+if [ -n "${SIGN_IDENTITY}" ]; then
+    echo "==> Signing DMG..."
+    codesign --force --sign "${SIGN_IDENTITY}" "${DMG_NAME}"
+fi
+
+# Notarize if credentials are available
+if [ -n "${NOTARIZE_APPLE_ID:-}" ] && [ -n "${NOTARIZE_PASSWORD:-}" ] && [ -n "${NOTARIZE_TEAM_ID:-}" ]; then
+    echo "==> Submitting for notarization..."
+    xcrun notarytool submit "${DMG_NAME}" \
+        --apple-id "${NOTARIZE_APPLE_ID}" \
+        --password "${NOTARIZE_PASSWORD}" \
+        --team-id "${NOTARIZE_TEAM_ID}" \
+        --wait
+
+    echo "==> Stapling notarization ticket..."
+    xcrun stapler staple "${DMG_NAME}"
+else
+    echo "==> Skipping notarization (credentials not set)"
+fi
+
 echo ""
 echo "==> Done! Created ${DMG_NAME}"
 echo "    Size: $(du -h "${DMG_NAME}" | cut -f1)"
-echo ""
-echo "To distribute:"
-echo "  1. Upload ${DMG_NAME} to a GitHub Release"
-echo "  2. Users download, open DMG, drag to Applications"
-echo ""
-echo "Note: Without code signing, users must right-click > Open on first launch."
-echo "To sign and notarize (requires Apple Developer account):"
-echo "  codesign --deep --force --sign \"Developer ID Application: Your Name\" ${APP_BUNDLE}"
-echo "  xcrun notarytool submit ${DMG_NAME} --apple-id you@email.com --team-id TEAMID --password app-specific-password"
