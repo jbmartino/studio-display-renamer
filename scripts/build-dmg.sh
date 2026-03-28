@@ -70,7 +70,7 @@ if [ -n "${NOTARIZE_PROFILE:-}" ]; then
     echo "==> Submitting DMG for notarization..."
     xcrun notarytool submit "${DMG_NAME}" \
         --keychain-profile "${NOTARIZE_PROFILE}" \
-        --wait --timeout 10m
+        --wait
 
     echo "==> Stapling notarization ticket to DMG..."
     xcrun stapler staple "${DMG_NAME}"

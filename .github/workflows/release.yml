@@ -60,6 +60,10 @@ jobs:
           NOTARIZE_PROFILE: notarize-profile
         run: bash scripts/build-dmg.sh "${GITHUB_REF_NAME#v}"
 
+      - name: Check notarization history
+        if: always()
+        run: xcrun notarytool history --keychain-profile "notarize-profile" 2>&1 | head -20 || true
+
       - name: Clean up keychain
         if: always()
         run: security delete-keychain "$RUNNER_TEMP/build.keychain-db" || true
