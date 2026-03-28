@@ -1,12 +1,18 @@
 import AVFoundation
 import CoreAudio
+import Accelerate
 
 class InputLevelMonitor {
     private var engine: AVAudioEngine?
+    private var currentRMS: Float = 0
+    private var displayTimer: Timer?
+    private var smoothedLevel: Float = 0
     var onLevel: ((Float) -> Void)?
 
     func start(deviceUID: String) {
         stop()
+        currentRMS = 0
+        smoothedLevel = 0
 
         let engine = AVAudioEngine()
         self.engine = engine
@@ -20,24 +26,30 @@ class InputLevelMonitor {
 
         let format = inputNode.outputFormat(forBus: 0)
 
-        inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { [weak self] buffer, _ in
+        // Audio tap: just compute RMS and store it (no main thread dispatch)
+        inputNode.installTap(onBus: 0, bufferSize: 256, format: format) { [weak self] buffer, _ in
+            guard let self else { return }
             let channelData = buffer.floatChannelData?[0]
             let frameLength = Int(buffer.frameLength)
             guard let data = channelData, frameLength > 0 else { return }
 
-            // Compute RMS
-            var sum: Float = 0
-            for i in 0..<frameLength {
-                let sample = data[i]
-                sum += sample * sample
-            }
-            let rms = sqrtf(sum / Float(frameLength))
-            // Scale to 0-1 range (typical speech RMS is ~0.01-0.1)
+            var rms: Float = 0
+            let count = vDSP_Length(frameLength)
+            vDSP_rmsqv(data, 1, &rms, count)
+            self.currentRMS = rms
+        }
+
+        // Display timer: update UI at ~30fps from the main thread
+        displayTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 30.0, repeats: true) { [weak self] _ in
+            guard let self else { return }
+            let rms = self.currentRMS
             let level = min(rms * 10, 1.0)
 
-            DispatchQueue.main.async {
-                self?.onLevel?(level)
-            }
+            // Smooth: fast attack, slower decay
+            let smoothing: Float = level > self.smoothedLevel ? 0.7 : 0.2
+            self.smoothedLevel += smoothing * (level - self.smoothedLevel)
+
+            self.onLevel?(self.smoothedLevel)
         }
 
         do {
@@ -48,6 +60,8 @@ class InputLevelMonitor {
     }
 
     func stop() {
+        displayTimer?.invalidate()
+        displayTimer = nil
         engine?.inputNode.removeTap(onBus: 0)
         engine?.stop()
         engine = nil

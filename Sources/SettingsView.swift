@@ -249,9 +249,18 @@ private struct DeviceRow: View {
                     Text("Level")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    ProgressView(value: Double(level))
-                        .tint(.green)
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            RoundedRectangle(cornerRadius: 3)
+                                .fill(Color.secondary.opacity(0.2))
+                            RoundedRectangle(cornerRadius: 3)
+                                .fill(Color.green)
+                                .frame(width: geo.size.width * CGFloat(level))
+                        }
+                    }
+                    .frame(height: 8)
                 }
+                .animation(.linear(duration: 0.05), value: level)
                 .transition(.opacity)
             }
         }

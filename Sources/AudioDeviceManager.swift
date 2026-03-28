@@ -80,6 +80,19 @@ final class AudioDeviceManager {
             return nil
         }
 
+        // Filter out aggregate devices (virtual devices created by apps or the system)
+        var transportType: UInt32 = 0
+        var transportAddress = AudioObjectPropertyAddress(
+            mSelector: kAudioDevicePropertyTransportType,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        var transportSize = UInt32(MemoryLayout<UInt32>.size)
+        if AudioObjectGetPropertyData(id, &transportAddress, 0, nil, &transportSize, &transportType) == noErr,
+           transportType == kAudioDeviceTransportTypeAggregate {
+            return nil
+        }
+
         let hasInput = streamCount(id: id, scope: kAudioObjectPropertyScopeInput) > 0
         let hasOutput = streamCount(id: id, scope: kAudioObjectPropertyScopeOutput) > 0
 
