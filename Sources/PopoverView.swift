@@ -235,28 +235,30 @@ struct PopoverView: View {
             UInt32(MemoryLayout<AudioObjectID>.size)
         )
 
-        // Generate a gentle two-tone chime
+        // Use stereo at 44.1kHz — AVAudioEngine handles sample rate conversion
         let sampleRate: Double = 44100
-        let format = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1)!
+        let format = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 2)!
+
         let playerNode = AVAudioPlayerNode()
         engine.attach(playerNode)
         engine.connect(playerNode, to: engine.mainMixerNode, format: format)
 
+        // Generate a gentle two-tone chime
         let duration = 0.8
         let frameCount = AVAudioFrameCount(sampleRate * duration)
         let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount)!
         buffer.frameLength = frameCount
-        let data = buffer.floatChannelData![0]
 
-        // Two harmonious tones (C5 + E5) with a soft fade-in/out envelope
         let freq1: Double = 523.25  // C5
         let freq2: Double = 659.25  // E5
         for i in 0..<Int(frameCount) {
             let t = Double(i) / sampleRate
-            // Envelope: quick attack, gentle decay
             let envelope = Float(min(t / 0.02, 1.0) * exp(-t * 3.0))
             let sample = Float(sin(2.0 * .pi * freq1 * t) + 0.6 * sin(2.0 * .pi * freq2 * t))
-            data[i] = sample * envelope * 0.3
+            let value = sample * envelope * 0.3
+            // Write to all channels so stereo devices get equal volume
+            buffer.floatChannelData![0][i] = value
+            buffer.floatChannelData![1][i] = value
         }
 
         do {
