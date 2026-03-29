@@ -13,17 +13,29 @@ struct AudioDevice: Identifiable, Equatable {
     /// and "AppleUSBAudioEngine:Apple Inc.:Studio Display Microphone:A1498802E:6,7"
     /// share the serial "A1498802E". We extract up to (but not including) the last colon-segment.
     var hardwareGroupKey: String {
-        // Try to find a serial-like segment: split by ":" and look for the hex serial
+        // For Apple USB Audio UIDs like "AppleUSBAudioEngine:Apple Inc.:Studio Display:A1498802E:8,9"
+        // group by vendor + serial: parts[0]:parts[1]:parts[3]
         let parts = uid.split(separator: ":")
-        // For Apple USB Audio, the format is vendor:product:serial:channels
-        // The serial is typically the 4th-to-last or a hex string
-        // Simpler approach: drop the last segment (channel config like "8,9" or "6,7")
-        // and drop the product name segment to get a stable grouping key
         if parts.count >= 4 {
-            // Use vendor + serial: parts[0] (engine) + parts[1] (vendor) + parts[3] (serial)
             return "\(parts[0]):\(parts[1]):\(parts[3])"
         }
-        return uid
+        // For built-in devices like "MacBook Pro Speakers" / "MacBook Pro Microphone",
+        // or virtual devices like "Microsoft Teams Audio" that share the same name stem,
+        // group by stripping known suffixes to find a common base name.
+        return nameBasedGroupKey
+    }
+
+    /// Strips known audio suffixes to produce a grouping key from the device name.
+    var nameBasedGroupKey: String {
+        let suffixes = [" Speakers", " Speaker", " Microphone", " Mic", " Audio"]
+        var base = name
+        for suffix in suffixes {
+            if base.hasSuffix(suffix) {
+                base = String(base.dropLast(suffix.count))
+                break
+            }
+        }
+        return "name:\(base)"
     }
 }
 
