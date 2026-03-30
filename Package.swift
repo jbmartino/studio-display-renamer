@@ -8,6 +8,11 @@ let package = Package(
         .executableTarget(
             name: "StudioDisplayRenamer",
             path: "Sources"
+        ),
+        .testTarget(
+            name: "StudioDisplayRenamerTests",
+            dependencies: ["StudioDisplayRenamer"],
+            path: "Tests"
         )
     ]
 )
