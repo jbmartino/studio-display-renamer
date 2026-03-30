@@ -34,6 +34,20 @@ swift build
 .build/debug/StudioDisplayRenamer
 ```
 
+## Tests
+
+Run the standalone test script (no Xcode required):
+
+```bash
+swift Tests/run_tests.swift
+```
+
+On machines with Xcode installed, you can also use the SPM test target:
+
+```bash
+swift test
+```
+
 ## Usage
 
 1. Click the speaker icon in the menu bar
