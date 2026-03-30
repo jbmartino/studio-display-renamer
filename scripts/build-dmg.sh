@@ -4,7 +4,8 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 VERSION="${1:-1.0.0}"
-APP_NAME="StudioDisplayRenamer"
+APP_NAME="Studio Display Renamer"
+EXECUTABLE_NAME="StudioDisplayRenamer"
 DMG_NAME="${APP_NAME}-${VERSION}.dmg"
 BUILD_DIR=".build/release"
 APP_BUNDLE="${APP_NAME}.app"
@@ -20,7 +21,7 @@ echo "==> Swift build complete."
 echo "==> Creating app bundle..."
 rm -rf "${APP_BUNDLE}"
 mkdir -p "${APP_BUNDLE}/Contents/MacOS"
-cp "${BUILD_DIR}/${APP_NAME}" "${APP_BUNDLE}/Contents/MacOS/"
+cp "${BUILD_DIR}/${EXECUTABLE_NAME}" "${APP_BUNDLE}/Contents/MacOS/"
 cp Info.plist "${APP_BUNDLE}/Contents/"
 
 # Copy app icon if it exists
@@ -32,7 +33,7 @@ fi
 # Code sign the app bundle
 if [ -n "${SIGN_IDENTITY}" ]; then
     echo "==> Signing app bundle with: ${SIGN_IDENTITY}..."
-    codesign --force --options runtime --sign "${SIGN_IDENTITY}" "${APP_BUNDLE}/Contents/MacOS/${APP_NAME}"
+    codesign --force --options runtime --sign "${SIGN_IDENTITY}" "${APP_BUNDLE}/Contents/MacOS/${EXECUTABLE_NAME}"
     codesign --force --options runtime --sign "${SIGN_IDENTITY}" "${APP_BUNDLE}"
     echo "==> Verifying signature..."
     codesign --verify --verbose "${APP_BUNDLE}"

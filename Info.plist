@@ -6,8 +6,12 @@
     <string>com.josh.StudioDisplayRenamer</string>
     <key>CFBundleName</key>
     <string>Studio Display Renamer</string>
+    <key>CFBundleDisplayName</key>
+    <string>Studio Display Renamer</string>
     <key>CFBundleExecutable</key>
     <string>StudioDisplayRenamer</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleVersion</key>
