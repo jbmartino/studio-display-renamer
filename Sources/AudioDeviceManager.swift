@@ -120,8 +120,7 @@ final class AudioDeviceManager {
             } else if let custom = Preferences.customName(for: device.uid) {
                 devices[i].displayLabel = custom
             } else if let group = nameCounts[device.name], group.count > 1 {
-                let suffix = String(device.uid.suffix(4))
-                devices[i].displayLabel = "\(device.name) (\(suffix))"
+                devices[i].displayLabel = device.name
             } else {
                 devices[i].displayLabel = device.name
             }
