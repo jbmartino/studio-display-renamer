@@ -1,31 +1,32 @@
 # macOS Audio Renamer
 
-A lightweight macOS menu bar app for managing and renaming audio devices — particularly useful when you have multiple identical devices (like Apple Studio Displays) that macOS gives the same name.
+A lightweight macOS menu bar app for managing and renaming audio devices.
 
 ![Popover](screenshots/popover.png)
 
 ## Origin
 
-This project was originally inspired by the challenge of using multiple Apple Studio Displays, which share identical speaker and microphone names in macOS. It works with any audio device — external displays, USB interfaces, AirPods, built-in hardware, and virtual devices.
+This project was originally inspired by the challenge of using multiple Apple Studio Displays that share the same name with no native way to set a custom name. This made joining meetings a nightmare.
 
 ## Features
 
-- **One-click switching** — set default input, output, or both from a single popover panel
+- **One-click switching** — set default input, output, or both from a single panel (persists to Zoom/Teams calls)
 - **Custom device names** — rename any device to something meaningful (e.g., "Studio Display Speakers" → "Main Display")
 - **Paired device grouping** — speaker + mic pairs are linked for devices that share a name stem (Studio Displays, MacBook Pro, AirPods, etc.)
 - **Use Both** — set a paired device as both input and output with one click
-- **Auto-restore** — your preferred device is automatically re-selected when reconnected
+- **Auto-restore** — your preferred device is automatically retained when reconnected
 - **Device testing** — play a test chime through any speaker, monitor mic input levels with a live meter
 - **Two-column layout** — outputs on the left, inputs on the right for quick comparison
-- **Persistent preferences** — custom names and preferred devices survive app restarts
 
 ## Install
 
 ### Download
 
-1. Grab the latest `.dmg` from [Releases](../../releases)
-2. Open the DMG and drag **macOS Audio Renamer** to Applications
-3. Launch from Applications (first time: right-click > Open to bypass Gatekeeper)
+1. Download the latest `.dmg` from [Releases](https://github.com/jbmartino/macos-audio-renamer/releases)
+![macOSdmg](screenshots/macOSdmg.png)
+2. Open the DMG from `~/Downloads` and drag **macOS Audio Renamer** to Applications
+![dmgapplication](screenshots/dmgapplication.png)
+3. Launch macOS Audio Renamer from Applications
 
 ### Build from source
 
